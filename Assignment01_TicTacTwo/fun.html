@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OOP Tic-Tac-Toe</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .board { display: grid; grid-template-columns: repeat(3, 100px); gap: 5px; margin: 20px auto; width: 320px; }
+        .cell { width: 100px; height: 100px; font-size: 2em; text-align: center; line-height: 100px; background: lightgray; cursor: pointer; }
+        .cell.taken { cursor: not-allowed; }
+        button { margin-top: 10px; padding: 10px; font-size: 1em; }
+    </style>
+</head>
+<body>
+    <h1>OOP Tic-Tac-Toe</h1>
+    <div id="status">Player X's turn</div>
+    <div class="board" id="board"></div>
+    <button id="restart">Restart</button>
+
+    <script>
+        class Board {
+            constructor() {
+                this.cells = Array(9).fill(null);
+            }
+
+            updateCell(index, player) {
+                if (!this.cells[index]) {
+                    this.cells[index] = player;
+                    return true;
+                }
+                return false;
+            }
+
+            getWinner() {
+                const winningCombos = [
+                    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+                    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+                    [0, 4, 8], [2, 4, 6]            // Diagonals
+                ];
+
+                for (let [a, b, c] of winningCombos) {
+                    if (this.cells[a] && this.cells[a] === this.cells[b] && this.cells[a] === this.cells[c]) {
+                        return this.cells[a];
+                    }
+                }
+                return this.cells.includes(null) ? null : "Tie";
+            }
+
+            reset() {
+                this.cells.fill(null);
+            }
+        }
+
+        class Game {
+            constructor() {
+                this.board = new Board();
+                this.currentPlayer = "X";
+                this.init();
+            }
+
+            init() {
+                this.render();
+                document.getElementById("board").addEventListener("click", (e) => this.handleMove(e));
+                document.getElementById("restart").addEventListener("click", () => this.restart());
+            }
+
+            handleMove(event) {
+                const index = Array.from(event.target.parentNode.children).indexOf(event.target);
+                if (this.board.updateCell(index, this.currentPlayer)) {
+                    this.render();
+                    let winner = this.board.getWinner();
+                    if (winner) {
+                        document.getElementById("status").innerText = winner === "Tie" ? "It's a tie!" : `Player ${winner} wins!`;
+                    } else {
+                        this.currentPlayer = this.currentPlayer === "X" ? "O" : "X";
+                        document.getElementById("status").innerText = `Player ${this.currentPlayer}'s turn`;
+                    }
+                }
+            }
+
+            render() {
+                const boardElem = document.getElementById("board");
+                boardElem.innerHTML = "";
+                this.board.cells.forEach((cell, index) => {
+                    const div = document.createElement("div");
+                    div.classList.add("cell");
+                    if (cell) div.classList.add("taken");
+                    div.innerText = cell || "";
+                    boardElem.appendChild(div);
+                });
+            }
+
+            restart() {
+                this.board.reset();
+                this.currentPlayer = "X";
+                document.getElementById("status").innerText = "Player X's turn";
+                this.render();
+            }
+        }
+
+        new Game();
+    </script>
+</body>
+</html>
