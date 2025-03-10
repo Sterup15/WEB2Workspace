@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OOP Tic-Tac-Toe</title>
     <style>
+        /* Basic styling for layout */
         body { font-family: Arial, sans-serif; text-align: center; }
         .board { display: grid; grid-template-columns: repeat(3, 100px); gap: 5px; margin: 20px auto; width: 320px; }
         .cell { width: 100px; height: 100px; font-size: 2em; text-align: center; line-height: 100px; background: lightgray; cursor: pointer; }
@@ -19,11 +20,13 @@
     <button id="restart">Restart</button>
 
     <script>
+        // Board class to manage board state
         class Board {
             constructor() {
-                this.cells = Array(9).fill(null);
+                this.cells = Array(9).fill(null); // Initializes an empty board
             }
 
+            // Updates a cell if it is empty and returns true, otherwise returns false
             updateCell(index, player) {
                 if (!this.cells[index]) {
                     this.cells[index] = player;
@@ -32,6 +35,7 @@
                 return false;
             }
 
+            // Checks if there is a winner or if the game is a tie
             getWinner() {
                 const winningCombos = [
                     [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
@@ -41,30 +45,34 @@
 
                 for (let [a, b, c] of winningCombos) {
                     if (this.cells[a] && this.cells[a] === this.cells[b] && this.cells[a] === this.cells[c]) {
-                        return this.cells[a];
+                        return this.cells[a]; // Returns the winner ('X' or 'O')
                     }
                 }
-                return this.cells.includes(null) ? null : "Tie";
+                return this.cells.includes(null) ? null : "Tie"; // Returns "Tie" if no empty spaces
             }
 
+            // Resets the board to its initial state
             reset() {
                 this.cells.fill(null);
             }
         }
 
+        // Game class to manage overall game flow
         class Game {
             constructor() {
-                this.board = new Board();
-                this.currentPlayer = "X";
+                this.board = new Board(); // Create a new Board instance
+                this.currentPlayer = "X"; // Set first player as 'X'
                 this.init();
             }
 
+            // Initializes the game by rendering and setting event listeners
             init() {
                 this.render();
                 document.getElementById("board").addEventListener("click", (e) => this.handleMove(e));
                 document.getElementById("restart").addEventListener("click", () => this.restart());
             }
 
+            // Handles a player's move
             handleMove(event) {
                 const index = Array.from(event.target.parentNode.children).indexOf(event.target);
                 if (this.board.updateCell(index, this.currentPlayer)) {
@@ -79,10 +87,11 @@
                 }
             }
 
+            // Renders the board and updates UI
             render() {
                 const boardElem = document.getElementById("board");
                 boardElem.innerHTML = "";
-                this.board.cells.forEach((cell, index) => {
+                this.board.cells.forEach((cell) => {
                     const div = document.createElement("div");
                     div.classList.add("cell");
                     if (cell) div.classList.add("taken");
@@ -91,6 +100,7 @@
                 });
             }
 
+            // Resets the game
             restart() {
                 this.board.reset();
                 this.currentPlayer = "X";
@@ -99,6 +109,7 @@
             }
         }
 
+        // Start the game
         new Game();
     </script>
 </body>

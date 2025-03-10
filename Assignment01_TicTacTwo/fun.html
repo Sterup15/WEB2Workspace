@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OOP Tic-Tac-Toe</title>
+    <title>Functional Tic-Tac-Toe</title>
     <style>
+        /* Basic styling */
         body { font-family: Arial, sans-serif; text-align: center; }
         .board { display: grid; grid-template-columns: repeat(3, 100px); gap: 5px; margin: 20px auto; width: 320px; }
         .cell { width: 100px; height: 100px; font-size: 2em; text-align: center; line-height: 100px; background: lightgray; cursor: pointer; }
@@ -13,93 +14,75 @@
     </style>
 </head>
 <body>
-    <h1>OOP Tic-Tac-Toe</h1>
+    <h1>Functional Tic-Tac-Toe</h1>
     <div id="status">Player X's turn</div>
     <div class="board" id="board"></div>
     <button id="restart">Restart</button>
 
     <script>
-        class Board {
-            constructor() {
-                this.cells = Array(9).fill(null);
-            }
+        // Game state stored in an immutable object
+        let gameState = {
+            board: Array(9).fill(null),
+            currentPlayer: "X"
+        };
 
-            updateCell(index, player) {
-                if (!this.cells[index]) {
-                    this.cells[index] = player;
-                    return true;
+        // Winning combinations
+        const winningCombos = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+            [0, 4, 8], [2, 4, 6]            // Diagonals
+        ];
+
+        // Function to check winner
+        function checkWinner(board) {
+            for (let [a, b, c] of winningCombos) {
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return board[a];
                 }
-                return false;
             }
-
-            getWinner() {
-                const winningCombos = [
-                    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-                    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-                    [0, 4, 8], [2, 4, 6]            // Diagonals
-                ];
-
-                for (let [a, b, c] of winningCombos) {
-                    if (this.cells[a] && this.cells[a] === this.cells[b] && this.cells[a] === this.cells[c]) {
-                        return this.cells[a];
-                    }
-                }
-                return this.cells.includes(null) ? null : "Tie";
-            }
-
-            reset() {
-                this.cells.fill(null);
-            }
+            return board.includes(null) ? null : "Tie";
         }
 
-        class Game {
-            constructor() {
-                this.board = new Board();
-                this.currentPlayer = "X";
-                this.init();
-            }
+        // Function to handle a player's move
+        function handleMove(index) {
+            if (gameState.board[index]) return; // Ignore move if cell is taken
 
-            init() {
-                this.render();
-                document.getElementById("board").addEventListener("click", (e) => this.handleMove(e));
-                document.getElementById("restart").addEventListener("click", () => this.restart());
-            }
+            gameState = {
+                ...gameState,
+                board: gameState.board.map((cell, i) => (i === index ? gameState.currentPlayer : cell)),
+                currentPlayer: gameState.currentPlayer === "X" ? "O" : "X"
+            };
 
-            handleMove(event) {
-                const index = Array.from(event.target.parentNode.children).indexOf(event.target);
-                if (this.board.updateCell(index, this.currentPlayer)) {
-                    this.render();
-                    let winner = this.board.getWinner();
-                    if (winner) {
-                        document.getElementById("status").innerText = winner === "Tie" ? "It's a tie!" : `Player ${winner} wins!`;
-                    } else {
-                        this.currentPlayer = this.currentPlayer === "X" ? "O" : "X";
-                        document.getElementById("status").innerText = `Player ${this.currentPlayer}'s turn`;
-                    }
-                }
-            }
-
-            render() {
-                const boardElem = document.getElementById("board");
-                boardElem.innerHTML = "";
-                this.board.cells.forEach((cell, index) => {
-                    const div = document.createElement("div");
-                    div.classList.add("cell");
-                    if (cell) div.classList.add("taken");
-                    div.innerText = cell || "";
-                    boardElem.appendChild(div);
-                });
-            }
-
-            restart() {
-                this.board.reset();
-                this.currentPlayer = "X";
-                document.getElementById("status").innerText = "Player X's turn";
-                this.render();
-            }
+            render();
+            const winner = checkWinner(gameState.board);
+            document.getElementById("status").innerText = winner
+                ? winner === "Tie" ? "It's a tie!" : `Player ${winner} wins!`
+                : `Player ${gameState.currentPlayer}'s turn`;
         }
 
-        new Game();
+        // Function to render the board
+        function render() {
+            const boardElem = document.getElementById("board");
+            boardElem.innerHTML = "";
+            gameState.board.forEach((cell, index) => {
+                const div = document.createElement("div");
+                div.classList.add("cell");
+                if (cell) div.classList.add("taken");
+                div.innerText = cell || "";
+                div.addEventListener("click", () => handleMove(index));
+                boardElem.appendChild(div);
+            });
+        }
+
+        // Restart the game
+        document.getElementById("restart").addEventListener("click", () => {
+            gameState = { board: Array(9).fill(null), currentPlayer: "X" };
+            document.getElementById("status").innerText = "Player X's turn";
+            render();
+        });
+
+        // Initialize the game
+        render();
     </script>
 </body>
 </html>
